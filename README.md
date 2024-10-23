@@ -91,3 +91,15 @@ The system is designed to handle a large user base and high traffic efficiently,
 
    ```bash
    git clone https://github.com/your-repository/on-demand-logistics-platform.git
+
+2. Install dependencies for frontend:
+
+    ```bash
+    cd frontend/
+    npm install
+
+3. Install dependencies for backend:
+
+    ```bash
+    cd backend/
+    npm install
