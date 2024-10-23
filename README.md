@@ -72,9 +72,9 @@ The system is designed to handle a large user base and high traffic efficiently,
 ## Technologies Used
 
 - **Frontend**: 
-  - Next.js
+  - React
   - Tailwind CSS
-  - React.js
+  - Zustand
   - Axios for API requests
 
 - **Backend**: 
@@ -82,6 +82,7 @@ The system is designed to handle a large user base and high traffic efficiently,
   - Express.js
   - MongoDB for data storage
   - JWT for authentication
+  - Bcrypt
   - Google Maps API (Distance Matrix) for price and distance calculations
 
 ## Installation and Setup
