@@ -7,7 +7,7 @@ require('dotenv').config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Function to calculate the distance between two zip codes (using Google Maps API)
-const calculateDistance = async (pickupZip, dropoffZip) => {
+const calculateDistance = async (pickup, dropoff) => {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY; // Your Google Maps API Key
 
   // Ensure that the API key is not empty
@@ -16,8 +16,7 @@ const calculateDistance = async (pickupZip, dropoffZip) => {
   }
 
   // Construct the request URL properly
-  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${pickupZip}&destinations=${dropoffZip}&key=${apiKey}`;
-
+  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${pickup}&destinations=${dropoff}&key=${apiKey}`;
   try {
     const response = await axios.get(url);
 
@@ -52,11 +51,12 @@ const calculateDistance = async (pickupZip, dropoffZip) => {
 
 // Route to estimate the price based on distance and duration
 router.post('/price-estimate', verifyToken, async (req, res) => {
-  const { pickupZip, dropoffZip, vehicleType } = req.body;
+  const { pickup, dropoff, vehicleType } = req.body;
+  //console.log(pickup,dropoff);
   
   try {
     // Calculate the distance and duration
-    const { distanceInMiles, distanceInKm, distanceduration } = await calculateDistance(pickupZip, dropoffZip);
+    const { distanceInMiles, distanceInKm, distanceduration } = await calculateDistance(pickup, dropoff);
     
     // Calculate the price based on the distance (simple pricing logic)
     const pricePerMile = 2; // Example price per mile
