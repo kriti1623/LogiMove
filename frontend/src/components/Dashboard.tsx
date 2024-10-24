@@ -41,6 +41,12 @@ interface DashboardProps {
   userType: 'user' | 'captain';
 }
 
+interface EstimatedBookingResponse{
+  estimatedPrice : string;
+  totalDistance : string;
+  estimatedDuration : string;
+}
+
 export default function Dashboard({ userType }: DashboardProps) {
   const { logout } = useAuth(); // Get userEmail and userName from useAuth
   const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'tracking'>('overview');
@@ -48,10 +54,16 @@ export default function Dashboard({ userType }: DashboardProps) {
   const [userName, setUserName] = useState<string | null>(null);
   const [email, setUserEmail] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
+  //const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
+  const [estimatedBookingResponse , setEstimatedBookingResponse] = useState<EstimatedBookingResponse>({
+    estimatedPrice: "",
+    totalDistance: '',
+    estimatedDuration: ''
+
+  })
   const [bookingDetails, setBookingDetails] = useState({
-    pickupZip: '',
-    dropoffZip: '',
+    pickup: '',
+    dropoff: '',
     vehicleType: '',
   });
 
@@ -82,19 +94,26 @@ export default function Dashboard({ userType }: DashboardProps) {
 
       // const request payload
       const payload = {
-        pickupZip: bookingDetails.pickupZip,
-        dropoffZip: bookingDetails.dropoffZip,
+        pickup: bookingDetails.pickup,
+        dropoff: bookingDetails.dropoff,
         vehicleType: bookingDetails.vehicleType
       }
 
+      console.log(payload)
       const response = await axios.post(`${BACKEND_URL}/api/v1/dashboard/price-estimate`, payload, {
         headers: {
           Authorization: token,
           'Content-Type': 'application/json',
         }
       })
-      const price = Math.floor(Math.random() * 100) + 50;
-      setEstimatedPrice(price);
+      console.log(response.data);
+
+      setEstimatedBookingResponse({
+        estimatedPrice: response.data.estimatedPrice,
+        totalDistance: response.data.distanceInKm,
+        estimatedDuration: response.data.estimatedDuration
+      })
+      //setEstimatedPrice(price);
       setIsDialogOpen(true);
 
     }catch(error){
@@ -198,22 +217,22 @@ export default function Dashboard({ userType }: DashboardProps) {
                         <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label htmlFor="pickupZip">Pickup Zip Code</Label>
+                              <Label htmlFor="pickupZip">Pickup Location</Label>
                               <Input
-                                id="pickupZip"
-                                name="pickupZip"
-                                placeholder="Enter pickup zip code"
-                                value={bookingDetails.pickupZip}
+                                id="pickup"
+                                name="pickup"
+                                placeholder="Enter pickup Location"
+                                value={bookingDetails.pickup}
                                 onChange={handleInputChange}
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="dropoffZip">Drop-off Zip Code</Label>
+                              <Label htmlFor="dropoffZip">Drop-off Location</Label>
                               <Input
-                                id="dropoffZip"
-                                name="dropoffZip"
+                                id="dropoff"
+                                name="dropoff"
                                 placeholder="Enter drop-off zip code"
-                                value={bookingDetails.dropoffZip}
+                                value={bookingDetails.dropoff}
                                 onChange={handleInputChange}
                               />
                             </div>
@@ -327,13 +346,24 @@ export default function Dashboard({ userType }: DashboardProps) {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Price Estimation</DialogTitle>
+            <DialogTitle>Booking Details</DialogTitle>
             <DialogDescription>
-              Here's the estimated price for your booking:
+              Here are the details for your booking:
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <p className="text-2xl font-bold text-center">${estimatedPrice}</p>
+          <div className="py-4 space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="font-semibold">Estimated Price:</span>
+              <span className="text-2xl font-bold">{estimatedBookingResponse.estimatedPrice}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-semibold">Total Distance:</span>
+              <span>{estimatedBookingResponse.totalDistance}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-semibold">Estimated Duration:</span>
+              <span>{estimatedBookingResponse.estimatedDuration} minutes</span>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
