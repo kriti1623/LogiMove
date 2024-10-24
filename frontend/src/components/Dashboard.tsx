@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth'; // Import your useAuth hook
 import {
   Sidebar,
@@ -13,18 +12,14 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Truck, User, Clock, Calendar, DollarSign, Menu, LogOut } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import axios from 'axios';
-import { BACKEND_URL } from '@/config';
+import { useUserDashboard } from '@/hooks/useUserDashboardhook'; // Import the new hook
+import { VehicleBooking } from './VehicleBooking';
 
 // Mock data for charts
 const bookingsData = [
@@ -41,91 +36,26 @@ interface DashboardProps {
   userType: 'user' | 'captain';
 }
 
-interface EstimatedBookingResponse{
-  estimatedPrice : string;
-  totalDistance : string;
-  estimatedDuration : string;
-}
-
 export default function Dashboard({ userType }: DashboardProps) {
   const { logout } = useAuth(); // Get userEmail and userName from useAuth
-  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'tracking'>('overview');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null);
-  const [email, setUserEmail] = useState<string | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  //const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
-  const [estimatedBookingResponse , setEstimatedBookingResponse] = useState<EstimatedBookingResponse>({
-    estimatedPrice: "",
-    totalDistance: '',
-    estimatedDuration: ''
-
-  })
-  const [bookingDetails, setBookingDetails] = useState({
-    pickup: '',
-    dropoff: '',
-    vehicleType: '',
-  });
+  const {
+    activeTab,
+    sidebarOpen,
+    userName,
+    email,
+    isDialogOpen,
+    estimatedBookingResponse,
+    bookingDetails,
+    setActiveTab,
+    setSidebarOpen,
+    handleInputChange,
+    handleVehicleTypeChange,
+    handleGetPriceEstimate,
+    handleConfirmBooking,
+    setIsDialogOpen,
+  } = useUserDashboard();
 
   const firstChar = userName ? userName.charAt(0).toUpperCase() : '';
-
-  useEffect(() => {
-    setUserEmail(sessionStorage.getItem('email'));
-    setUserName(sessionStorage.getItem('name'));
-  }, []);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setBookingDetails(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleVehicleTypeChange = (value: string) => {
-    setBookingDetails(prev => ({ ...prev, vehicleType: value }));
-  };
-
-  const handleGetPriceEstimate = async () => {
-    // Mock price estimation logic
-    // const price = Math.floor(Math.random() * 100) + 50;
-    // setEstimatedPrice(price);
-    // setIsDialogOpen(true);
-    try {
-      // extract the session token
-      const token = sessionStorage.getItem('token');
-
-      // const request payload
-      const payload = {
-        pickup: bookingDetails.pickup,
-        dropoff: bookingDetails.dropoff,
-        vehicleType: bookingDetails.vehicleType
-      }
-
-      console.log(payload)
-      const response = await axios.post(`${BACKEND_URL}/api/v1/dashboard/price-estimate`, payload, {
-        headers: {
-          Authorization: token,
-          'Content-Type': 'application/json',
-        }
-      })
-      console.log(response.data);
-
-      setEstimatedBookingResponse({
-        estimatedPrice: response.data.estimatedPrice,
-        totalDistance: response.data.distanceInKm,
-        estimatedDuration: response.data.estimatedDuration
-      })
-      //setEstimatedPrice(price);
-      setIsDialogOpen(true);
-
-    }catch(error){
-      console.error('Error in Price Estimate:',error)
-    }
-  };
-
-  const handleConfirmBooking = () => {
-    // Implement booking confirmation logic here
-    console.log('Booking confirmed:', bookingDetails);
-    setIsDialogOpen(false);
-  };
 
   return (
     <SidebarProvider>
@@ -208,53 +138,16 @@ export default function Dashboard({ userType }: DashboardProps) {
                 {userType === 'user' ? (
                   <>
                     {/* Book a vehicle */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Book a Vehicle</CardTitle>
-                        <CardDescription>Enter your booking details</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="pickupZip">Pickup Location</Label>
-                              <Input
-                                id="pickup"
-                                name="pickup"
-                                placeholder="Enter pickup Location"
-                                value={bookingDetails.pickup}
-                                onChange={handleInputChange}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="dropoffZip">Drop-off Location</Label>
-                              <Input
-                                id="dropoff"
-                                name="dropoff"
-                                placeholder="Enter drop-off zip code"
-                                value={bookingDetails.dropoff}
-                                onChange={handleInputChange}
-                              />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="vehicle-type">Vehicle Type</Label>
-                            <Select onValueChange={handleVehicleTypeChange}>
-                              <SelectTrigger id="vehicle-type">
-                                <SelectValue placeholder="Select vehicle type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="van">Van</SelectItem>
-                                <SelectItem value="truck">Truck</SelectItem>
-                                <SelectItem value="trailer">Trailer</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <Button className="w-full md:w-auto" onClick={handleGetPriceEstimate}>Get Price Estimate</Button>
-                        </form>
-                      </CardContent>
-                    </Card>
-
+                    <VehicleBooking
+                      bookingDetails={bookingDetails}
+                      estimatedBookingResponse={estimatedBookingResponse}
+                      isDialogOpen={isDialogOpen}
+                      setIsDialogOpen={setIsDialogOpen}
+                      handleInputChange={handleInputChange}
+                      handleVehicleTypeChange={handleVehicleTypeChange}
+                      handleGetPriceEstimate={handleGetPriceEstimate}
+                      handleConfirmBooking={handleConfirmBooking}
+                    />
                     {/* Recent Bookings */}
                     <Card>
                       <CardHeader>
@@ -343,34 +236,6 @@ export default function Dashboard({ userType }: DashboardProps) {
           </main>
         </div>
       </div>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Booking Details</DialogTitle>
-            <DialogDescription>
-              Here are the details for your booking:
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">Estimated Price:</span>
-              <span className="text-2xl font-bold">{estimatedBookingResponse.estimatedPrice}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">Total Distance:</span>
-              <span>{estimatedBookingResponse.totalDistance}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">Estimated Duration:</span>
-              <span>{estimatedBookingResponse.estimatedDuration} minutes</span>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleConfirmBooking}>Confirm Booking</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </SidebarProvider>
   );
 }
