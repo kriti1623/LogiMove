@@ -103,3 +103,32 @@ The system is designed to handle a large user base and high traffic efficiently,
     ```bash
     cd backend/
     npm install
+4. Set up your environment variables in a ```.env``` in backend file:
+
+    ```bash
+    DB_URL=your_mongo_url
+    JWT_SECRET=your_secret_key
+    GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+
+5. Start the backend and frontend development server:
+
+   ```bash
+   cd backend/
+   node index.js
+   cd frontend/
+   npm run dev
+6. Navigate to ```http://localhost:5173``` to access the platform.
+
+## Remaining Work
+-  Implementing real-time notifications and in-app messaging between users and captains.
+-  Adding advanced analytics and reporting features for admins.
+-  Optimizing the system for handling large-scale traffic with caching and load balancing strategies.
+-  Enhancing security features for payments and sensitive data handling.
+
+## Contact
+For any feedback, Please Reach out to me:
+- Name : Kriti Kumari
+- Email : kumarikriti1623@gmail.com
+- Linkedin : <a href="https://www.linkedin.com/in/kriti-kumari-741457248/" target="_blank">Kriti Kumari</a>
+
+Designed and Developed by ❤️ Kriti Kumari
